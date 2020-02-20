@@ -9,6 +9,52 @@
 
 #define TAMANHO 7
 
+/* PILHA DE POSICOES PERCORRIDAS */
+
+typedef struct posicao{
+    int x;
+    int y;
+}Pos;
+
+typedef struct nodePilha{
+    Pos pos;
+    struct nodePilha *anterior;
+}nodePilha;
+
+nodePilha *alocarNode(){
+    nodePilha *node;
+
+    node = (nodePilha*) malloc(sizeof(nodePilha));
+
+    node->pos.x = 0;
+    node->pos.y = 0;
+
+    node->anterior = NULL;
+}
+
+void iniciarPilha(nodePilha **topo){
+    (*topo) = alocarNode();
+}
+
+void push(nodePilha **topo, int x, int y){
+    nodePilha *node = alocarNode();
+
+    node->pos.x = x;
+    node->pos.y = y;
+
+    node->anterior = (*topo);
+    (*topo) = node;
+}
+
+Pos pop(nodePilha **topo){
+    nodePilha *node = *topo;
+
+    (*topo) = (*topo)->anterior;
+
+    return node->pos;
+}
+
+/* MANIPULACAO E EXIBICAO DA MATRIZ */
 
 void printMatriz(int **mat){
     HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
@@ -66,9 +112,11 @@ int isGramaCortada(int **mat){
 
 int cortadorDeGrama(int **mat){
     int i, j;
-    int gramaCortada = 1;
     int cortadorX = 0, cortadorY = 0;
     int lastPosX = 0, lastPosY = 0;
+
+    nodePilha *topo;
+    iniciarPilha(&topo);
 
     mat[0][0] = CO;
 
@@ -80,17 +128,18 @@ int cortadorDeGrama(int **mat){
    do {
         mat[cortadorX][cortadorY] = GB;
 
-        if (cortadorY > 0 && mat[cortadorX][cortadorY-1] == GA) { lastPosX = cortadorX; lastPosY = cortadorY; cortadorY--; }
+        if (cortadorY > 0 && mat[cortadorX][cortadorY-1] == GA) { push(topo, cortadorX, cortadorY); cortadorY--; }
 
-        else if (cortadorX > 0 && mat[cortadorX-1][cortadorY] == GA) { lastPosX = cortadorX; lastPosY = cortadorY; cortadorX--; }
+        else if (cortadorX > 0 && mat[cortadorX-1][cortadorY] == GA) { push(topo, cortadorX, cortadorY); cortadorX--; }
 
-        else if (cortadorX < TAMANHO-1 && mat[cortadorX+1][cortadorY] == GA) { lastPosX = cortadorX; lastPosY = cortadorY; cortadorX++; }
+        else if (cortadorX < TAMANHO-1 && mat[cortadorX+1][cortadorY] == GA) { push(topo, cortadorX, cortadorY); cortadorX++; }
 
-        else if (cortadorY < TAMANHO-1 && mat[cortadorX][cortadorY+1] == GA) { lastPosX = cortadorX; lastPosY = cortadorY; cortadorY++; }
+        else if (cortadorY < TAMANHO-1 && mat[cortadorX][cortadorY+1] == GA) { push(topo, cortadorX, cortadorY); cortadorY++; }
 
 		else {
-			cortadorX = lastPosX;
-			cortadorY = lastPosY;
+            Pos lastPos = pop(topo);
+			cortadorX = lastPos.x;
+			cortadorY = lastPos.y;
 		}
 
         mat[cortadorX][cortadorY] = CO;
@@ -99,11 +148,7 @@ int cortadorDeGrama(int **mat){
         system("cls");
         printMatriz(mat);
 
-        printf("cortadorPos: [%d][%d]\n", cortadorX, cortadorY);
-        printf("lastPos: [%d][%d]\n", lastPosX, lastPosY);
-
-        gramaCortada = isGramaCortada(mat);
-    } while (gramaCortada);
+    } while (isGramaCortada(mat));
 
 
     return 0;
@@ -122,10 +167,10 @@ int main(){
         for (j = 0; j < TAMANHO; j++)
             mat[i][j] = GA;
 
-    mat[2][1] = FO;
+    mat[6][1] = FO;
     mat[3][2] = FO;
     mat[1][4] = FO;
-    mat[2][5] = FO;
+    mat[5][1] = FO;
     mat[5][5] = FO;
 
     printMatriz(mat);
