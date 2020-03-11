@@ -99,6 +99,29 @@ void printMatriz(int **mat){
 
 }
 
+void inserirFormigueiros(int **mat, int n){
+    int i, x, y;
+
+    for (i = 0; i < n; i++){
+        x = (rand() + n) % TAMANHO;
+        y = rand() % TAMANHO;
+
+        if(mat[x][y] == GA || mat[x][y] == FO || mat[x][y] == CO)
+            mat[x][y] = FO;
+        else
+            i--;
+    }
+}
+
+Pos inserirCortador(int **mat){
+    Pos p;
+
+    p.x = (rand() + rand()) % TAMANHO;
+    p.y = rand() % TAMANHO;
+
+    return p;
+}
+
 int isGramaCortada(int **mat){
     int i, j;
 
@@ -114,18 +137,27 @@ int cortadorDeGrama(int **mat){
     int i, j;
     int cortadorX = 0, cortadorY = 0;
     int lastPosX = 0, lastPosY = 0;
+    int passos = 0;
 
     nodePilha *topo;
     iniciarPilha(&topo);
 
-    mat[0][0] = CO;
+    Pos p = inserirCortador(mat);
+    cortadorX = p.x;
+    cortadorY = p.y;
+
+    mat[cortadorX][cortadorY] = CO;
+
+    inserirFormigueiros(mat, 5);
+
+    printMatriz(mat);
 
     system("pause");
     system("cls");
 
-    printMatriz(mat);
-
    do {
+        passos++;
+
         mat[cortadorX][cortadorY] = GB;
 
         if (cortadorY > 0 && mat[cortadorX][cortadorY-1] == GA) { push(topo, cortadorX, cortadorY); cortadorY--; }
@@ -148,6 +180,8 @@ int cortadorDeGrama(int **mat){
         system("cls");
         printMatriz(mat);
 
+        printf("\nSTEPS: [%d]", passos);
+
     } while (isGramaCortada(mat));
 
 
@@ -158,6 +192,8 @@ int main(){
     int **mat;
     int i, j;
 
+    srand(time(NULL));
+
     mat = (int*) malloc (TAMANHO * sizeof(int*));
 
     for (i = 0; i < TAMANHO; i++)
@@ -166,14 +202,6 @@ int main(){
     for (i = 0; i < TAMANHO; i++)
         for (j = 0; j < TAMANHO; j++)
             mat[i][j] = GA;
-
-    mat[6][1] = FO;
-    mat[3][2] = FO;
-    mat[1][4] = FO;
-    mat[5][1] = FO;
-    mat[5][5] = FO;
-
-    printMatriz(mat);
 
     cortadorDeGrama(mat);
 
