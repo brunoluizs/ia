@@ -7,7 +7,7 @@
 #define FO 14
 #define CO 13
 
-#define TAMANHO 7
+#define TAMANHO 5
 
 /* PILHA DE POSICOES PERCORRIDAS */
 
